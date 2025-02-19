@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: new-cluster-configs
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - git:
+      repoURL: https://github.com/turbra/infra-gitops.git
+      revision: HEAD
+      directories:
+      - path: clusters/live/lab/*
+      - path: clusters/lab/live/base-configs
+        exclude: true
+  template:
+    metadata:
+      name: '{{.path.basename}}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/turbra/infra-gitops.git
+        targetRevision: HEAD
+        path: '{{.path.path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.path.basename}}'
+      ignoreDifferences:
+        - group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          jsonPointers:
+            - /webhooks/0/clientConfig/caBundle
+      syncPolicy:
+        automated:
+          prune: true
+          allowEmpty: true
+
