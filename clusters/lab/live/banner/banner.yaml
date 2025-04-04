@@ -1,0 +1,12 @@
+apiVersion: console.openshift.io/v1
+kind: ConsoleNotification
+metadata:
+  name: banner
+spec:
+  text: "SNO Hub Lab"
+  location: BannerTop
+  color: '#fff'
+  backgroundColor: 'F28C28'
+  link:
+    href: https://github.com/turbra/infra-gitops.git
+    text: "cluster-config"
